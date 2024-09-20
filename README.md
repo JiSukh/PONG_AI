@@ -1,0 +1,1 @@
+Basic Neural network created from scratch, using default Python and Numpy.
