@@ -36,13 +36,22 @@ class ActivationReLU:
     def forward(self, input_neurons):
         """Forward pass for ReLU activation"""
         self.output = input_neurons * (input_neurons > 0)
+        
+class ActivationStableSoftMax:
+    """Soft Max activation function for entire neuron layer. Function is stable, preventing under/over flow."""
+    def forward(self, input_neurons):
+        """Forward pass for Stable Soft Max activation"""
+        z = input_neurons - np.max(input_neurons, axis=-1, keepdims=True)
+        numerator = np.exp(z)
+        denominator = np.sum(numerator, axis=-1, keepdims=True)
+        self.output = numerator/denominator
 
 layer1 = LayerDense(4,3)
 layer2 = LayerDense(3,2)
 
 layer1.forward(input_layer)
 
-activate = ActivationReLU()
+activate = ActivationStableSoftMax()
 activate.forward(layer1.output)
 
 
