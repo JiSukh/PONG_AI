@@ -17,6 +17,8 @@ input_layer = [[2,3,4,5],
                [.2,.3,.4,.5],
                [-2,-3,-4,-5]]
 
+targets = np.array([0,1,2])
+
 class LayerDense:
     """Dense layer object for neural network"""
     def __init__(self, n_input, n_neurons):
@@ -45,6 +47,26 @@ class ActivationStableSoftMax:
         numerator = np.exp(z)
         denominator = np.sum(numerator, axis=-1, keepdims=True)
         self.output = numerator/denominator
+        
+        
+class CategoricalCrossEntropy:
+    """Calculate the loss of function using Categorical Cross Entropy"""
+    def calculate_loss(self, ypred, ytrue):
+        batch_loss = np.mean(self.forward(ypred, ytrue))
+        return batch_loss
+        
+        
+    def forward(self, ypred, ytrue):
+        clip_ypred = np.clip(ypred, 1e-15, 1-1e-15) #prevent log(0)
+        #handle multiple types of targets (one-hots and class target)
+        if len(ytrue.shape) == 1:
+            confidences = clip_ypred[range(len(ypred)), ytrue] #class target
+        else:
+            confidences = np.sum(clip_ypred * ytrue, axis=1) #One hot
+            
+        return -np.log(confidences)
+
+        
 
 layer1 = LayerDense(4,3)
 layer2 = LayerDense(3,2)
@@ -53,8 +75,10 @@ layer1.forward(input_layer)
 
 activate = ActivationStableSoftMax()
 activate.forward(layer1.output)
+loss = CategoricalCrossEntropy()
 
 
 
 print(layer1.output)
 print(activate.output)
+print(loss.calculate_loss(activate.output, targets))
